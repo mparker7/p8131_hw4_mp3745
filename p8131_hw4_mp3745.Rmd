@@ -24,3 +24,67 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
+
+
+## Problem 1
+
+#### i)
+
+Enter in data
+```{r}
+housing_df = tibble(
+  contact = c(rep("low", 3), rep("high", 3)),
+  home_type = rep(c("tower_block", "apartment", "house"), 2),
+  sat_low = c(65, 130, 67, 34, 141, 130),
+  sat_med = c(54, 76, 48, 47, 116, 105),
+  sat_high = c(100, 111, 62, 100, 191, 104)
+)
+```
+
+Table to compare satisfaction with contact level of residents
+```{r}
+# Table
+sat_level_contact = housing_df %>% 
+  select(-home_type) %>% 
+  group_by(contact) %>% 
+  summarize(
+    sat_low = sum(sat_low),
+    sat_med = sum(sat_med),
+    sat_high = sum(sat_high),
+    total = sum(sat_low, sat_med, sat_high),
+    sat_low_perc = round((sat_low * 100 / total), 2),
+    sat_med_perc = round((sat_med * 100 / total), 2),
+    sat_high_perc = round((sat_high * 100 / total), 2)
+  ) %>% 
+  select(contact, sat_low, sat_low_perc, sat_med, sat_med_perc, sat_high, sat_high_perc, total) 
+
+# View
+sat_level_contact %>% 
+  knitr::kable()
+```
+
+From the above table, we can see that they may be a slight association with degree of contact with other residents and their satisfaction. Of those with a high degree of contact with other residents `r sat_level_contact %>% filter(contact == "high") %>%  select(sat_high_perc)`% have a high level of satisfaction, whereas among those with a low degree of contact, `r sat_level_contact %>% filter(contact == "low") %>%  select(sat_high_perc)`% have a high level of satisfaction. Of those with a high degree of contact with other residents `r sat_level_contact %>% filter(contact == "high") %>%  select(sat_low_perc)`% have a low level of satisfaction, whereas among those with a low degree of contact, `r sat_level_contact %>% filter(contact == "low") %>%  select(sat_low_perc)`% have a low level of satisfaction.
+
+Table to compare satisfaction with type of housing
+```{r}
+# Table
+sat_level_housing = housing_df %>% 
+  select(-contact) %>% 
+  group_by(home_type) %>% 
+  summarize(
+    sat_low = sum(sat_low),
+    sat_med = sum(sat_med),
+    sat_high = sum(sat_high),
+    total = sum(sat_low, sat_med, sat_high),
+    sat_low_perc = round((sat_low * 100 / total), 2),
+    sat_med_perc = round((sat_med * 100 / total), 2),
+    sat_high_perc = round((sat_high * 100 / total), 2)
+  ) %>% 
+  select(home_type, sat_low, sat_low_perc, sat_med, sat_med_perc, sat_high, sat_high_perc, total) 
+
+# View
+sat_level_housing %>% 
+  knitr::kable()
+```
+
+From the above table, we can see that they may be an association with housing type and residents satisfaction. Of those with a tower block `r sat_level_housing %>% filter(home_type == "tower_block") %>%  select(sat_high_perc)`% have a high level of satisfaction. Among those with a house, `r sat_level_housing %>% filter(home_type == "house") %>%  select(sat_high_perc)`% have a high level of satisfaction. And among those with an apartment, `r sat_level_housing %>% filter(home_type == "apartment") %>%  select(sat_high_perc)`% have a high level of satisfaction. Of those with a tower block `r sat_level_housing %>% filter(home_type == "tower_block") %>%  select(sat_low_perc)`% have a low level of satisfaction. Among those with a house, `r sat_level_housing %>% filter(home_type == "house") %>%  select(sat_low_perc)`% have a low level of satisfaction. And among those with an apartment, `r sat_level_housing %>% filter(home_type == "apartment") %>%  select(sat_low_perc)`% have a low level of satisfaction.  

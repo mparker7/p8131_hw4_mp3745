@@ -370,7 +370,142 @@ summary {
 </div>
 
 
+<div id="problem-1" class="section level2">
+<h2>Problem 1</h2>
+<div id="i" class="section level4">
+<h4>i)</h4>
+<p>Enter in data</p>
+<pre class="r"><code>housing_df = tibble(
+  contact = c(rep(&quot;low&quot;, 3), rep(&quot;high&quot;, 3)),
+  home_type = rep(c(&quot;tower_block&quot;, &quot;apartment&quot;, &quot;house&quot;), 2),
+  sat_low = c(65, 130, 67, 34, 141, 130),
+  sat_med = c(54, 76, 48, 47, 116, 105),
+  sat_high = c(100, 111, 62, 100, 191, 104)
+)</code></pre>
+<p>Table to compare satisfaction with contact level of residents</p>
+<pre class="r"><code># Table
+sat_level_contact = housing_df %&gt;% 
+  select(-home_type) %&gt;% 
+  group_by(contact) %&gt;% 
+  summarize(
+    sat_low = sum(sat_low),
+    sat_med = sum(sat_med),
+    sat_high = sum(sat_high),
+    total = sum(sat_low, sat_med, sat_high),
+    sat_low_perc = round((sat_low * 100 / total), 2),
+    sat_med_perc = round((sat_med * 100 / total), 2),
+    sat_high_perc = round((sat_high * 100 / total), 2)
+  ) %&gt;% 
+  select(contact, sat_low, sat_low_perc, sat_med, sat_med_perc, sat_high, sat_high_perc, total) 
 
+# View
+sat_level_contact %&gt;% 
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">contact</th>
+<th align="right">sat_low</th>
+<th align="right">sat_low_perc</th>
+<th align="right">sat_med</th>
+<th align="right">sat_med_perc</th>
+<th align="right">sat_high</th>
+<th align="right">sat_high_perc</th>
+<th align="right">total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">high</td>
+<td align="right">305</td>
+<td align="right">31.51</td>
+<td align="right">268</td>
+<td align="right">27.69</td>
+<td align="right">395</td>
+<td align="right">40.81</td>
+<td align="right">968</td>
+</tr>
+<tr class="even">
+<td align="left">low</td>
+<td align="right">262</td>
+<td align="right">36.75</td>
+<td align="right">178</td>
+<td align="right">24.96</td>
+<td align="right">273</td>
+<td align="right">38.29</td>
+<td align="right">713</td>
+</tr>
+</tbody>
+</table>
+<p>From the above table, we can see that they may be a slight association with degree of contact with other residents and their satisfaction. Of those with a high degree of contact with other residents 40.81% have a high level of satisfaction, whereas among those with a low degree of contact, 38.29% have a high level of satisfaction. Of those with a high degree of contact with other residents 31.51% have a low level of satisfaction, whereas among those with a low degree of contact, 36.75% have a low level of satisfaction.</p>
+<p>Table to compare satisfaction with type of housing</p>
+<pre class="r"><code># Table
+sat_level_housing = housing_df %&gt;% 
+  select(-contact) %&gt;% 
+  group_by(home_type) %&gt;% 
+  summarize(
+    sat_low = sum(sat_low),
+    sat_med = sum(sat_med),
+    sat_high = sum(sat_high),
+    total = sum(sat_low, sat_med, sat_high),
+    sat_low_perc = round((sat_low * 100 / total), 2),
+    sat_med_perc = round((sat_med * 100 / total), 2),
+    sat_high_perc = round((sat_high * 100 / total), 2)
+  ) %&gt;% 
+  select(home_type, sat_low, sat_low_perc, sat_med, sat_med_perc, sat_high, sat_high_perc, total) 
+
+# View
+sat_level_housing %&gt;% 
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">home_type</th>
+<th align="right">sat_low</th>
+<th align="right">sat_low_perc</th>
+<th align="right">sat_med</th>
+<th align="right">sat_med_perc</th>
+<th align="right">sat_high</th>
+<th align="right">sat_high_perc</th>
+<th align="right">total</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">apartment</td>
+<td align="right">271</td>
+<td align="right">35.42</td>
+<td align="right">192</td>
+<td align="right">25.10</td>
+<td align="right">302</td>
+<td align="right">39.48</td>
+<td align="right">765</td>
+</tr>
+<tr class="even">
+<td align="left">house</td>
+<td align="right">197</td>
+<td align="right">38.18</td>
+<td align="right">153</td>
+<td align="right">29.65</td>
+<td align="right">166</td>
+<td align="right">32.17</td>
+<td align="right">516</td>
+</tr>
+<tr class="odd">
+<td align="left">tower_block</td>
+<td align="right">99</td>
+<td align="right">24.75</td>
+<td align="right">101</td>
+<td align="right">25.25</td>
+<td align="right">200</td>
+<td align="right">50.00</td>
+<td align="right">400</td>
+</tr>
+</tbody>
+</table>
+<p>From the above table, we can see that they may be an association with housing type and residents satisfaction. Of those with a tower block 50% have a high level of satisfaction. Among those with a house, 32.17% have a high level of satisfaction. And among those with an apartment, 39.48% have a high level of satisfaction. Of those with a tower block 24.75% have a low level of satisfaction. Among those with a house, 38.18% have a low level of satisfaction. And among those with an apartment, 35.42% have a low level of satisfaction.</p>
+</div>
+</div>
 
 
 
