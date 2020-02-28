@@ -506,6 +506,96 @@ sat_level_housing %&gt;%
 <p>From the above table, we can see that they may be an association with housing type and residents satisfaction. Of those with a tower block 50% have a high level of satisfaction. Among those with a house, 32.17% have a high level of satisfaction. And among those with an apartment, 39.48% have a high level of satisfaction. Of those with a tower block 24.75% have a low level of satisfaction. Among those with a house, 38.18% have a low level of satisfaction. And among those with an apartment, 35.42% have a low level of satisfaction.</p>
 </div>
 </div>
+<div id="ii" class="section level2">
+<h2>ii)</h2>
+<p>Fit nominal logistic regression model</p>
+<pre class="r"><code># Response matrix
+resp = housing_df %&gt;% 
+  select(sat_low, sat_med, sat_high) %&gt;% 
+  as.matrix()
+
+# Nominal model
+housing_fit_nom = multinom(resp ~ contact + home_type, data = housing_df) </code></pre>
+<pre><code>## # weights:  15 (8 variable)
+## initial  value 1846.767257 
+## iter  10 value 1803.046285
+## final  value 1802.740161 
+## converged</code></pre>
+<pre class="r"><code># View summary
+summary(housing_fit_nom)</code></pre>
+<pre><code>## Call:
+## multinom(formula = resp ~ contact + home_type, data = housing_df)
+## 
+## Coefficients:
+##          (Intercept) contactlow home_typehouse home_typetower_block
+## sat_med   -0.2180364 -0.2959832     0.06967922            0.4067631
+## sat_high   0.2474047 -0.3282264    -0.30402275            0.6415948
+## 
+## Std. Errors:
+##          (Intercept) contactlow home_typehouse home_typetower_block
+## sat_med   0.10930968  0.1301046      0.1437749            0.1713009
+## sat_high  0.09783068  0.1181870      0.1351693            0.1500774
+## 
+## Residual Deviance: 3605.48 
+## AIC: 3621.48</code></pre>
+<p>Check goodness of fit</p>
+<pre class="r"><code>pihat = predict(housing_fit_nom, type = 'probs') 
+m = rowSums(housing_df[,3:5])
+
+# Pearson residuals
+res_pearson = (housing_df[,3:5] - pihat * m) / sqrt(pihat * m)  
+
+# Generalized Pearson Chisq Stat
+g_stat = sum(res_pearson^2) 
+
+# P-value
+pval = 1 - pchisq(g_stat, df = (6 - 4) * (3 - 1)) # fit is good</code></pre>
+<p>Since 0.1395072 &gt; 0.05, we fail to reject our null hypothesis that the model does a good job fitting the data.</p>
+<p>Based on the signs of the coefficients in the above model, it appears there is a negative association between both low contact and renting a house with high satisfaction vs low satisfaction. There is a positive association between renting a tower block with high satisfaction vs low satisfaction. There is a negative association between low contact with medium satisfaction vs low satisfaction. There may be a slight positive association between renting a house and medium satisfaction vs low satisfaction. And there is a positive association between renting a tower block and medium satisfaction vs low satisfaction.</p>
+<p>Odds ratios with 95% CI’s</p>
+<pre class="r"><code>or_ci = cbind(summary(housing_fit_nom)$coefficients, summary(housing_fit_nom)$standard.errors) %&gt;% 
+  as_tibble() %&gt;% 
+  janitor::clean_names() %&gt;% 
+  rename(
+    coef_int = intercept,
+    coef_contact_low = contactlow,
+    coef_home_type_house = home_typehouse,
+    coef_home_type_tower_block = home_typetower_block,
+    std_err_int = v5,
+    std_err_contact_low = v6,
+    std_err_home_type_house = v7,
+    std_err_home_type_tower_block = v8
+  ) %&gt;% 
+  mutate(
+    model = c(&quot;sat_med&quot;, &quot;sat_high&quot;)
+  ) %&gt;% 
+  select(model, coef_int:std_err_home_type_tower_block) %&gt;% 
+  mutate(
+    int_lower = coef_int - std_err_int,
+    int_higher = coef_int + std_err_int,
+    contact_low_lower = coef_contact_low - std_err_contact_low,
+    contact_low_higher = coef_contact_low + std_err_contact_low,
+    home_type_house_lower = coef_home_type_house - std_err_home_type_house,
+    home_type_house_higher = coef_home_type_house + std_err_home_type_house,
+    home_type_tower_block_lower = coef_home_type_tower_block - std_err_home_type_tower_block,
+    home_type_tower_block_higher = coef_home_type_tower_block + std_err_home_type_tower_block,
+  ) %&gt;% 
+  mutate(
+    exp_int = exp(coef_int),
+    exp_int_lower = exp(int_lower),
+    exp_int_higher = exp(int_higher),
+    exp_contact_low = exp(coef_contact_low),
+    exp_contact_low_lower = exp(contact_low_lower),
+    exp_contact_low_higher = exp(contact_low_higher),
+    exp_home_type_house = exp(coef_home_type_house),
+    exp_home_type_house_lower = exp(home_type_house_lower),
+    exp_home_type_house_higher = exp(home_type_house_higher),
+    exp_home_type_tower_block = exp(coef_home_type_tower_block),
+    exp_home_type_tower_block_lower = exp(home_type_tower_block_lower),
+    exp_home_type_tower_block_higher = exp(home_type_tower_block_higher)
+  ) %&gt;% 
+  select(model, exp_contact_low:exp_home_type_tower_block_higher)</code></pre>
+</div>
 
 
 
