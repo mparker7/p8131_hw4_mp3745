@@ -381,11 +381,11 @@ summary {
   sat_low = c(65, 130, 67, 34, 141, 130),
   sat_med = c(54, 76, 48, 47, 116, 105),
   sat_high = c(100, 111, 62, 100, 191, 104)
-)</code></pre>
+) </code></pre>
 <p>Table to compare satisfaction with contact level of residents</p>
 <pre class="r"><code># Table
 sat_level_contact = housing_df %&gt;% 
-  select(-home_type) %&gt;% 
+  dplyr::select(-home_type) %&gt;% 
   group_by(contact) %&gt;% 
   summarize(
     sat_low = sum(sat_low),
@@ -396,7 +396,7 @@ sat_level_contact = housing_df %&gt;%
     sat_med_perc = round((sat_med * 100 / total), 2),
     sat_high_perc = round((sat_high * 100 / total), 2)
   ) %&gt;% 
-  select(contact, sat_low, sat_low_perc, sat_med, sat_med_perc, sat_high, sat_high_perc, total) 
+  dplyr::select(contact, sat_low, sat_low_perc, sat_med, sat_med_perc, sat_high, sat_high_perc, total) 
 
 # View
 sat_level_contact %&gt;% 
@@ -441,7 +441,7 @@ sat_level_contact %&gt;%
 <p>Table to compare satisfaction with type of housing</p>
 <pre class="r"><code># Table
 sat_level_housing = housing_df %&gt;% 
-  select(-contact) %&gt;% 
+  dplyr::select(-contact) %&gt;% 
   group_by(home_type) %&gt;% 
   summarize(
     sat_low = sum(sat_low),
@@ -452,7 +452,7 @@ sat_level_housing = housing_df %&gt;%
     sat_med_perc = round((sat_med * 100 / total), 2),
     sat_high_perc = round((sat_high * 100 / total), 2)
   ) %&gt;% 
-  select(home_type, sat_low, sat_low_perc, sat_med, sat_med_perc, sat_high, sat_high_perc, total) 
+  dplyr::select(home_type, sat_low, sat_low_perc, sat_med, sat_med_perc, sat_high, sat_high_perc, total) 
 
 # View
 sat_level_housing %&gt;% 
@@ -511,7 +511,7 @@ sat_level_housing %&gt;%
 <p>Fit nominal logistic regression model</p>
 <pre class="r"><code># Response matrix
 resp = housing_df %&gt;% 
-  select(sat_low, sat_med, sat_high) %&gt;% 
+  dplyr::select(sat_low, sat_med, sat_high) %&gt;% 
   as.matrix()
 
 # Nominal model
@@ -570,7 +570,7 @@ or_ci = cbind(summary(housing_fit_nom)$coefficients, summary(housing_fit_nom)$st
   mutate(
     model = c(&quot;sat_med&quot;, &quot;sat_high&quot;)
   ) %&gt;% 
-  select(model, coef_int:std_err_home_type_tower_block) %&gt;% 
+  dplyr::select(model, coef_int:std_err_home_type_tower_block) %&gt;% 
   mutate(
     int_lower = coef_int - std_err_int,
     int_higher = coef_int + std_err_int,
@@ -606,15 +606,7 @@ or_ci = cbind(summary(housing_fit_nom)$coefficients, summary(housing_fit_nom)$st
       str_c(round(exp_home_type_tower_block, 2), 
             &quot; (&quot;, round(exp_home_type_tower_block_lower, 2), &quot;, &quot;, round(exp_home_type_tower_block_higher, 2), &quot;)&quot;)
   ) %&gt;% 
-  select(model, exp_contact_low_ci, exp_home_type_house_ci, exp_home_type_tower_block)
-
-or_ci %&gt;% 
-  filter(model == &quot;sat_med&quot;) %&gt;% 
-  select(exp_contact_low_ci)</code></pre>
-<pre><code>## # A tibble: 1 x 1
-##   exp_contact_low_ci
-##   &lt;chr&gt;             
-## 1 0.74 (0.65, 0.85)</code></pre>
+  dplyr::select(model, exp_contact_low_ci, exp_home_type_house_ci, exp_home_type_tower_block)</code></pre>
 <p>The odds ratio (with 95% CI) between medium satisfaction and low satisfaction for:</p>
 <ul>
 <li><p>degree of contact low vs high is 0.74 (0.65, 0.85)</p></li>
@@ -627,6 +619,50 @@ or_ci %&gt;%
 <li><p>home type house vs home type apartment is 0.74 (0.64, 0.84)</p></li>
 <li><p>home type tower block vs home type aparment is 1.9 (1.63, 2.21)</p></li>
 </ul>
+<div id="iii" class="section level4">
+<h4>iii)</h4>
+<p>Put data frame together</p>
+<pre class="r"><code>freq = c(housing_df$sat_low, housing_df$sat_med, housing_df$sat_high)
+
+housing_ord = tibble(
+  res = c(rep(c(&quot;low&quot;, &quot;med&quot;, &quot;high&quot;), c(6, 6, 6))),
+  contact = rep(housing_df$contact, 3),
+  home_type = rep(housing_df$home_type, 3),
+  freq = freq
+) %&gt;% 
+  mutate(
+    res = factor(res, levels = c(&quot;low&quot;, &quot;med&quot;, &quot;high&quot;), ordered = TRUE)
+  )</code></pre>
+<p>Fit proportional odds model</p>
+<pre class="r"><code># Fit
+housing_polr = polr(res ~ contact + home_type, data = housing_ord, weights = freq)
+
+# Summary
+summary(housing_polr)</code></pre>
+<pre><code>## 
+## Re-fitting to get Hessian</code></pre>
+<pre><code>## Call:
+## polr(formula = res ~ contact + home_type, data = housing_ord, 
+##     weights = freq)
+## 
+## Coefficients:
+##                        Value Std. Error t value
+## contactlow           -0.2524    0.09306  -2.713
+## home_typehouse       -0.2353    0.10521  -2.236
+## home_typetower_block  0.5010    0.11675   4.291
+## 
+## Intercepts:
+##          Value   Std. Error t value
+## low|med  -0.7488  0.0818    -9.1570
+## med|high  0.3637  0.0801     4.5393
+## 
+## Residual Deviance: 3610.286 
+## AIC: 3620.286</code></pre>
+<p>From the results of the proportional odds model, based on the signs of the coefficients, we can tell that a low degree of contact with residents is associated with a lower level of satisfaction compared to a high degree of contact. In addition, renting a house is associated with a lower level of satisfaction compared to renting an apartment. Finally, renting a tower block is associated with a higher level of satisfaction compared to renting an apartment.</p>
+</div>
+<div id="iv" class="section level4">
+<h4>iv)</h4>
+</div>
 </div>
 
 

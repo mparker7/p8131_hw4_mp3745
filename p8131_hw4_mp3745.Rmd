@@ -9,6 +9,7 @@ output: html_document
 library(tidyverse)
 library(viridis)
 library(nnet)
+library(MASS)
 
 knitr::opts_chunk$set(
 	echo = TRUE,
@@ -39,14 +40,14 @@ housing_df = tibble(
   sat_low = c(65, 130, 67, 34, 141, 130),
   sat_med = c(54, 76, 48, 47, 116, 105),
   sat_high = c(100, 111, 62, 100, 191, 104)
-)
+) 
 ```
 
 Table to compare satisfaction with contact level of residents
 ```{r}
 # Table
 sat_level_contact = housing_df %>% 
-  select(-home_type) %>% 
+  dplyr::select(-home_type) %>% 
   group_by(contact) %>% 
   summarize(
     sat_low = sum(sat_low),
@@ -57,20 +58,20 @@ sat_level_contact = housing_df %>%
     sat_med_perc = round((sat_med * 100 / total), 2),
     sat_high_perc = round((sat_high * 100 / total), 2)
   ) %>% 
-  select(contact, sat_low, sat_low_perc, sat_med, sat_med_perc, sat_high, sat_high_perc, total) 
+  dplyr::select(contact, sat_low, sat_low_perc, sat_med, sat_med_perc, sat_high, sat_high_perc, total) 
 
 # View
 sat_level_contact %>% 
   knitr::kable()
 ```
 
-From the above table, we can see that they may be a slight association with degree of contact with other residents and their satisfaction. Of those with a high degree of contact with other residents `r sat_level_contact %>% filter(contact == "high") %>%  select(sat_high_perc)`% have a high level of satisfaction, whereas among those with a low degree of contact, `r sat_level_contact %>% filter(contact == "low") %>%  select(sat_high_perc)`% have a high level of satisfaction. Of those with a high degree of contact with other residents `r sat_level_contact %>% filter(contact == "high") %>%  select(sat_low_perc)`% have a low level of satisfaction, whereas among those with a low degree of contact, `r sat_level_contact %>% filter(contact == "low") %>%  select(sat_low_perc)`% have a low level of satisfaction.
+From the above table, we can see that they may be a slight association with degree of contact with other residents and their satisfaction. Of those with a high degree of contact with other residents `r sat_level_contact %>% filter(contact == "high") %>%  dplyr::select(sat_high_perc)`% have a high level of satisfaction, whereas among those with a low degree of contact, `r sat_level_contact %>% filter(contact == "low") %>%  dplyr::select(sat_high_perc)`% have a high level of satisfaction. Of those with a high degree of contact with other residents `r sat_level_contact %>% filter(contact == "high") %>%  dplyr::select(sat_low_perc)`% have a low level of satisfaction, whereas among those with a low degree of contact, `r sat_level_contact %>% filter(contact == "low") %>%  dplyr::select(sat_low_perc)`% have a low level of satisfaction.
 
 Table to compare satisfaction with type of housing
 ```{r}
 # Table
 sat_level_housing = housing_df %>% 
-  select(-contact) %>% 
+  dplyr::select(-contact) %>% 
   group_by(home_type) %>% 
   summarize(
     sat_low = sum(sat_low),
@@ -81,14 +82,14 @@ sat_level_housing = housing_df %>%
     sat_med_perc = round((sat_med * 100 / total), 2),
     sat_high_perc = round((sat_high * 100 / total), 2)
   ) %>% 
-  select(home_type, sat_low, sat_low_perc, sat_med, sat_med_perc, sat_high, sat_high_perc, total) 
+  dplyr::select(home_type, sat_low, sat_low_perc, sat_med, sat_med_perc, sat_high, sat_high_perc, total) 
 
 # View
 sat_level_housing %>% 
   knitr::kable()
 ```
 
-From the above table, we can see that they may be an association with housing type and residents satisfaction. Of those with a tower block `r sat_level_housing %>% filter(home_type == "tower_block") %>%  select(sat_high_perc)`% have a high level of satisfaction. Among those with a house, `r sat_level_housing %>% filter(home_type == "house") %>%  select(sat_high_perc)`% have a high level of satisfaction. And among those with an apartment, `r sat_level_housing %>% filter(home_type == "apartment") %>%  select(sat_high_perc)`% have a high level of satisfaction. Of those with a tower block `r sat_level_housing %>% filter(home_type == "tower_block") %>%  select(sat_low_perc)`% have a low level of satisfaction. Among those with a house, `r sat_level_housing %>% filter(home_type == "house") %>%  select(sat_low_perc)`% have a low level of satisfaction. And among those with an apartment, `r sat_level_housing %>% filter(home_type == "apartment") %>%  select(sat_low_perc)`% have a low level of satisfaction.  
+From the above table, we can see that they may be an association with housing type and residents satisfaction. Of those with a tower block `r sat_level_housing %>% filter(home_type == "tower_block") %>%  dplyr::select(sat_high_perc)`% have a high level of satisfaction. Among those with a house, `r sat_level_housing %>% filter(home_type == "house") %>%  dplyr::select(sat_high_perc)`% have a high level of satisfaction. And among those with an apartment, `r sat_level_housing %>% filter(home_type == "apartment") %>%  dplyr::select(sat_high_perc)`% have a high level of satisfaction. Of those with a tower block `r sat_level_housing %>% filter(home_type == "tower_block") %>%  dplyr::select(sat_low_perc)`% have a low level of satisfaction. Among those with a house, `r sat_level_housing %>% filter(home_type == "house") %>%  dplyr::select(sat_low_perc)`% have a low level of satisfaction. And among those with an apartment, `r sat_level_housing %>% filter(home_type == "apartment") %>%  dplyr::select(sat_low_perc)`% have a low level of satisfaction.  
 
 
 ## ii)
@@ -97,7 +98,7 @@ Fit nominal logistic regression model
 ```{r}
 # Response matrix
 resp = housing_df %>% 
-  select(sat_low, sat_med, sat_high) %>% 
+  dplyr::select(sat_low, sat_med, sat_high) %>% 
   as.matrix()
 
 # Nominal model
@@ -147,7 +148,7 @@ or_ci = cbind(summary(housing_fit_nom)$coefficients, summary(housing_fit_nom)$st
   mutate(
     model = c("sat_med", "sat_high")
   ) %>% 
-  select(model, coef_int:std_err_home_type_tower_block) %>% 
+  dplyr::select(model, coef_int:std_err_home_type_tower_block) %>% 
   mutate(
     int_lower = coef_int - std_err_int,
     int_higher = coef_int + std_err_int,
@@ -183,26 +184,54 @@ or_ci = cbind(summary(housing_fit_nom)$coefficients, summary(housing_fit_nom)$st
       str_c(round(exp_home_type_tower_block, 2), 
             " (", round(exp_home_type_tower_block_lower, 2), ", ", round(exp_home_type_tower_block_higher, 2), ")")
   ) %>% 
-  select(model, exp_contact_low_ci, exp_home_type_house_ci, exp_home_type_tower_block)
-
-or_ci %>% 
-  filter(model == "sat_med") %>% 
-  select(exp_contact_low_ci)
-  
+  dplyr::select(model, exp_contact_low_ci, exp_home_type_house_ci, exp_home_type_tower_block)
 ```
 
 The odds ratio (with 95% CI) between medium satisfaction and low satisfaction for:
 
-* degree of contact low vs high is `r or_ci %>% filter(model == "sat_med") %>% select(exp_contact_low_ci)`
+* degree of contact low vs high is `r or_ci %>% filter(model == "sat_med") %>% dplyr::select(exp_contact_low_ci)`
 
-* home type house vs home type apartment is `r or_ci %>% filter(model == "sat_med") %>% select(exp_home_type_house_ci)`
+* home type house vs home type apartment is `r or_ci %>% filter(model == "sat_med") %>% dplyr::select(exp_home_type_house_ci)`
 
-* home type tower block vs home type aparment is `r or_ci %>% filter(model == "sat_med") %>% select(exp_home_type_tower_block)`
+* home type tower block vs home type aparment is `r or_ci %>% filter(model == "sat_med") %>% dplyr::select(exp_home_type_tower_block)`
 
 The odds ratio (with 95% CI) between high satisfaction and low satisfaction for:
 
-* degree of contact low vs high is `r or_ci %>% filter(model == "sat_high") %>% select(exp_contact_low_ci)`
+* degree of contact low vs high is `r or_ci %>% filter(model == "sat_high") %>% dplyr::select(exp_contact_low_ci)`
 
-* home type house vs home type apartment is `r or_ci %>% filter(model == "sat_high") %>% select(exp_home_type_house_ci)`
+* home type house vs home type apartment is `r or_ci %>% filter(model == "sat_high") %>% dplyr::select(exp_home_type_house_ci)`
 
-* home type tower block vs home type aparment is `r or_ci %>% filter(model == "sat_high") %>% select(exp_home_type_tower_block)`
+* home type tower block vs home type aparment is `r or_ci %>% filter(model == "sat_high") %>% dplyr::select(exp_home_type_tower_block)`
+
+
+#### iii)
+
+Put data frame together
+```{r}
+freq = c(housing_df$sat_low, housing_df$sat_med, housing_df$sat_high)
+
+housing_ord = tibble(
+  res = c(rep(c("low", "med", "high"), c(6, 6, 6))),
+  contact = rep(housing_df$contact, 3),
+  home_type = rep(housing_df$home_type, 3),
+  freq = freq
+) %>% 
+  mutate(
+    res = factor(res, levels = c("low", "med", "high"), ordered = TRUE)
+  )
+```
+
+
+Fit proportional odds model
+```{r}
+# Fit
+housing_polr = polr(res ~ contact + home_type, data = housing_ord, weights = freq)
+
+# Summary
+summary(housing_polr)
+```
+
+From the results of the proportional odds model, based on the signs of the coefficients, we can tell that a low degree of contact with residents is associated with a lower level of satisfaction compared to a high degree of contact. In addition, renting a house is associated with a lower level of satisfaction compared to renting an apartment. Finally, renting a tower block is associated with a higher level of satisfaction compared to renting an apartment.
+
+
+#### iv)
