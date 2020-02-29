@@ -128,8 +128,9 @@ Since `r pval` > 0.05, we fail to reject our null hypothesis that the model does
 Based on the signs of the coefficients in the above model, it appears there is a negative association between both low contact and renting a house with high satisfaction vs low satisfaction. There is a positive association between renting a tower block with high satisfaction vs low satisfaction. There is a negative association between low contact with medium satisfaction vs low satisfaction. There may be a slight positive association between renting a house and medium satisfaction vs low satisfaction. And there is a positive association between renting a tower block and medium satisfaction vs low satisfaction.
 
 
-Odds ratios with 95% CI's
+Odds ratios with 95% CIs
 ```{r}
+# ORs with 95% CIs
 or_ci = cbind(summary(housing_fit_nom)$coefficients, summary(housing_fit_nom)$standard.errors) %>% 
   as_tibble() %>% 
   janitor::clean_names() %>% 
@@ -171,6 +172,37 @@ or_ci = cbind(summary(housing_fit_nom)$coefficients, summary(housing_fit_nom)$st
     exp_home_type_tower_block_lower = exp(home_type_tower_block_lower),
     exp_home_type_tower_block_higher = exp(home_type_tower_block_higher)
   ) %>% 
-  select(model, exp_contact_low:exp_home_type_tower_block_higher)
+  mutate(
+    exp_contact_low_ci = 
+      str_c(round(exp_contact_low, 2), 
+            " (", round(exp_contact_low_lower, 2), ", ", round(exp_contact_low_higher, 2), ")"),
+    exp_home_type_house_ci = 
+      str_c(round(exp_home_type_house, 2), 
+            " (", round(exp_home_type_house_lower, 2), ", ", round(exp_home_type_house_higher, 2), ")"),
+    exp_home_type_tower_block = 
+      str_c(round(exp_home_type_tower_block, 2), 
+            " (", round(exp_home_type_tower_block_lower, 2), ", ", round(exp_home_type_tower_block_higher, 2), ")")
+  ) %>% 
+  select(model, exp_contact_low_ci, exp_home_type_house_ci, exp_home_type_tower_block)
+
+or_ci %>% 
+  filter(model == "sat_med") %>% 
+  select(exp_contact_low_ci)
+  
 ```
 
+The odds ratio (with 95% CI) between medium satisfaction and low satisfaction for:
+
+* degree of contact low vs high is `r or_ci %>% filter(model == "sat_med") %>% select(exp_contact_low_ci)`
+
+* home type house vs home type apartment is `r or_ci %>% filter(model == "sat_med") %>% select(exp_home_type_house_ci)`
+
+* home type tower block vs home type aparment is `r or_ci %>% filter(model == "sat_med") %>% select(exp_home_type_tower_block)`
+
+The odds ratio (with 95% CI) between high satisfaction and low satisfaction for:
+
+* degree of contact low vs high is `r or_ci %>% filter(model == "sat_high") %>% select(exp_contact_low_ci)`
+
+* home type house vs home type apartment is `r or_ci %>% filter(model == "sat_high") %>% select(exp_home_type_house_ci)`
+
+* home type tower block vs home type aparment is `r or_ci %>% filter(model == "sat_high") %>% select(exp_home_type_tower_block)`

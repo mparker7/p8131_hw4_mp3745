@@ -12,7 +12,7 @@
 
 <meta name="author" content="Matthew Parker" />
 
-<meta name="date" content="2020-02-27" />
+<meta name="date" content="2020-02-29" />
 
 <title>p8105_hw3_mp3745</title>
 
@@ -365,7 +365,7 @@ summary {
 
 <h1 class="title toc-ignore">p8105_hw3_mp3745</h1>
 <h4 class="author">Matthew Parker</h4>
-<h4 class="date">2020-02-27</h4>
+<h4 class="date">2020-02-29</h4>
 
 </div>
 
@@ -552,8 +552,9 @@ g_stat = sum(res_pearson^2)
 pval = 1 - pchisq(g_stat, df = (6 - 4) * (3 - 1)) # fit is good</code></pre>
 <p>Since 0.1395072 &gt; 0.05, we fail to reject our null hypothesis that the model does a good job fitting the data.</p>
 <p>Based on the signs of the coefficients in the above model, it appears there is a negative association between both low contact and renting a house with high satisfaction vs low satisfaction. There is a positive association between renting a tower block with high satisfaction vs low satisfaction. There is a negative association between low contact with medium satisfaction vs low satisfaction. There may be a slight positive association between renting a house and medium satisfaction vs low satisfaction. And there is a positive association between renting a tower block and medium satisfaction vs low satisfaction.</p>
-<p>Odds ratios with 95% CI’s</p>
-<pre class="r"><code>or_ci = cbind(summary(housing_fit_nom)$coefficients, summary(housing_fit_nom)$standard.errors) %&gt;% 
+<p>Odds ratios with 95% CIs</p>
+<pre class="r"><code># ORs with 95% CIs
+or_ci = cbind(summary(housing_fit_nom)$coefficients, summary(housing_fit_nom)$standard.errors) %&gt;% 
   as_tibble() %&gt;% 
   janitor::clean_names() %&gt;% 
   rename(
@@ -594,7 +595,38 @@ pval = 1 - pchisq(g_stat, df = (6 - 4) * (3 - 1)) # fit is good</code></pre>
     exp_home_type_tower_block_lower = exp(home_type_tower_block_lower),
     exp_home_type_tower_block_higher = exp(home_type_tower_block_higher)
   ) %&gt;% 
-  select(model, exp_contact_low:exp_home_type_tower_block_higher)</code></pre>
+  mutate(
+    exp_contact_low_ci = 
+      str_c(round(exp_contact_low, 2), 
+            &quot; (&quot;, round(exp_contact_low_lower, 2), &quot;, &quot;, round(exp_contact_low_higher, 2), &quot;)&quot;),
+    exp_home_type_house_ci = 
+      str_c(round(exp_home_type_house, 2), 
+            &quot; (&quot;, round(exp_home_type_house_lower, 2), &quot;, &quot;, round(exp_home_type_house_higher, 2), &quot;)&quot;),
+    exp_home_type_tower_block = 
+      str_c(round(exp_home_type_tower_block, 2), 
+            &quot; (&quot;, round(exp_home_type_tower_block_lower, 2), &quot;, &quot;, round(exp_home_type_tower_block_higher, 2), &quot;)&quot;)
+  ) %&gt;% 
+  select(model, exp_contact_low_ci, exp_home_type_house_ci, exp_home_type_tower_block)
+
+or_ci %&gt;% 
+  filter(model == &quot;sat_med&quot;) %&gt;% 
+  select(exp_contact_low_ci)</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   exp_contact_low_ci
+##   &lt;chr&gt;             
+## 1 0.74 (0.65, 0.85)</code></pre>
+<p>The odds ratio (with 95% CI) between medium satisfaction and low satisfaction for:</p>
+<ul>
+<li><p>degree of contact low vs high is 0.74 (0.65, 0.85)</p></li>
+<li><p>home type house vs home type apartment is 1.07 (0.93, 1.24)</p></li>
+<li><p>home type tower block vs home type aparment is 1.5 (1.27, 1.78)</p></li>
+</ul>
+<p>The odds ratio (with 95% CI) between high satisfaction and low satisfaction for:</p>
+<ul>
+<li><p>degree of contact low vs high is 0.72 (0.64, 0.81)</p></li>
+<li><p>home type house vs home type apartment is 0.74 (0.64, 0.84)</p></li>
+<li><p>home type tower block vs home type aparment is 1.9 (1.63, 2.21)</p></li>
+</ul>
 </div>
 
 
