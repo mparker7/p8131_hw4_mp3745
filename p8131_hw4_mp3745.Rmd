@@ -211,13 +211,13 @@ Put data frame together
 freq = c(housing_df$sat_low, housing_df$sat_med, housing_df$sat_high)
 
 housing_ord = tibble(
-  res = c(rep(c("low", "med", "high"), c(6, 6, 6))),
+  res = c(rep(c("sat_low", "sat_med", "sat_high"), c(6, 6, 6))),
   contact = rep(housing_df$contact, 3),
   home_type = rep(housing_df$home_type, 3),
   freq = freq
 ) %>% 
   mutate(
-    res = factor(res, levels = c("low", "med", "high"), ordered = TRUE)
+    res = factor(res, levels = c("sat_low", "sat_med", "sat_high"), ordered = TRUE)
   )
 ```
 
@@ -235,3 +235,33 @@ From the results of the proportional odds model, based on the signs of the coeff
 
 
 #### iv)
+
+Calculate Pearson residuals
+```{r}
+pihat = predict(housing_polr, housing_df, type = 'p')
+m = rowSums(cbind(housing_df$sat_low, housing_df$sat_med, housing_df$sat_high))
+res_pearson = (housing_df[,3:5] - pihat * m) / sqrt(pihat * m)
+
+# table of pearson residuals
+res_pearson_table = as_tibble(res_pearson) %>% 
+  mutate(
+    contact = housing_df$contact,
+    home_type = housing_df$home_type
+  ) %>% 
+  dplyr::select(contact, home_type, sat_low:sat_high)
+
+# View table
+res_pearson_table %>% 
+  knitr::kable()
+```
+
+The above table show the pearson residuals from the proportional odds model. The largest discrepancies are for:
+
+* contact high, home type house, satisfaction high (pearson_residual = -1.48)
+
+* contact high, home type house, satisfaction medium (pearson_residual = 1.37)
+
+* contact low, home type house, satisfaction high (pearson_residual = 1.24)
+
+* contact low, home type house, satisfaction low (pearson_residual = -1.14)
+

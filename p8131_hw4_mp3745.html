@@ -625,13 +625,13 @@ or_ci = cbind(summary(housing_fit_nom)$coefficients, summary(housing_fit_nom)$st
 <pre class="r"><code>freq = c(housing_df$sat_low, housing_df$sat_med, housing_df$sat_high)
 
 housing_ord = tibble(
-  res = c(rep(c(&quot;low&quot;, &quot;med&quot;, &quot;high&quot;), c(6, 6, 6))),
+  res = c(rep(c(&quot;sat_low&quot;, &quot;sat_med&quot;, &quot;sat_high&quot;), c(6, 6, 6))),
   contact = rep(housing_df$contact, 3),
   home_type = rep(housing_df$home_type, 3),
   freq = freq
 ) %&gt;% 
   mutate(
-    res = factor(res, levels = c(&quot;low&quot;, &quot;med&quot;, &quot;high&quot;), ordered = TRUE)
+    res = factor(res, levels = c(&quot;sat_low&quot;, &quot;sat_med&quot;, &quot;sat_high&quot;), ordered = TRUE)
   )</code></pre>
 <p>Fit proportional odds model</p>
 <pre class="r"><code># Fit
@@ -652,9 +652,9 @@ summary(housing_polr)</code></pre>
 ## home_typetower_block  0.5010    0.11675   4.291
 ## 
 ## Intercepts:
-##          Value   Std. Error t value
-## low|med  -0.7488  0.0818    -9.1570
-## med|high  0.3637  0.0801     4.5393
+##                  Value   Std. Error t value
+## sat_low|sat_med  -0.7488  0.0818    -9.1570
+## sat_med|sat_high  0.3637  0.0801     4.5393
 ## 
 ## Residual Deviance: 3610.286 
 ## AIC: 3620.286</code></pre>
@@ -662,6 +662,84 @@ summary(housing_polr)</code></pre>
 </div>
 <div id="iv" class="section level4">
 <h4>iv)</h4>
+<p>Calculate Pearson residuals</p>
+<pre class="r"><code>pihat = predict(housing_polr, housing_df, type = 'p')
+m = rowSums(cbind(housing_df$sat_low, housing_df$sat_med, housing_df$sat_high))
+res_pearson = (housing_df[,3:5] - pihat * m) / sqrt(pihat * m)
+
+# table of pearson residuals
+res_pearson_table = as_tibble(res_pearson) %&gt;% 
+  mutate(
+    contact = housing_df$contact,
+    home_type = housing_df$home_type
+  ) %&gt;% 
+  dplyr::select(contact, home_type, sat_low:sat_high)
+
+# View table
+res_pearson_table %&gt;% 
+  knitr::kable()</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">contact</th>
+<th align="left">home_type</th>
+<th align="right">sat_low</th>
+<th align="right">sat_med</th>
+<th align="right">sat_high</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">low</td>
+<td align="left">tower_block</td>
+<td align="right">0.7794178</td>
+<td align="right">-0.3696760</td>
+<td align="right">-0.3151660</td>
+</tr>
+<tr class="even">
+<td align="left">low</td>
+<td align="left">apartment</td>
+<td align="right">0.9176690</td>
+<td align="right">-1.0671401</td>
+<td align="right">-0.0152261</td>
+</tr>
+<tr class="odd">
+<td align="left">low</td>
+<td align="left">house</td>
+<td align="right">-1.1408527</td>
+<td align="right">0.1397992</td>
+<td align="right">1.2441278</td>
+</tr>
+<tr class="even">
+<td align="left">high</td>
+<td align="left">tower_block</td>
+<td align="right">-0.9946598</td>
+<td align="right">0.4549796</td>
+<td align="right">0.3353921</td>
+</tr>
+<tr class="odd">
+<td align="left">high</td>
+<td align="left">apartment</td>
+<td align="right">-0.2370150</td>
+<td align="right">-0.4051916</td>
+<td align="right">0.5378150</td>
+</tr>
+<tr class="even">
+<td align="left">high</td>
+<td align="left">house</td>
+<td align="right">0.2742913</td>
+<td align="right">1.3678370</td>
+<td align="right">-1.4777786</td>
+</tr>
+</tbody>
+</table>
+<p>The above table show the pearson residuals from the proportional odds model. The largest discrepancies are for:</p>
+<ul>
+<li><p>contact high, home type house, satisfaction high (pearson_residual = -1.48)</p></li>
+<li><p>contact high, home type house, satisfaction medium (pearson_residual = 1.37)</p></li>
+<li><p>contact low, home type house, satisfaction high (pearson_residual = 1.24)</p></li>
+<li><p>contact low, home type house, satisfaction low (pearson_residual = -1.14)</p></li>
+</ul>
 </div>
 </div>
 
