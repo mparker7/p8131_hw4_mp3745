@@ -12,7 +12,7 @@
 
 <meta name="author" content="Matthew Parker" />
 
-<meta name="date" content="2020-02-29" />
+<meta name="date" content="2020-03-02" />
 
 <title>p8105_hw3_mp3745</title>
 
@@ -365,7 +365,7 @@ summary {
 
 <h1 class="title toc-ignore">p8105_hw3_mp3745</h1>
 <h4 class="author">Matthew Parker</h4>
-<h4 class="date">2020-02-29</h4>
+<h4 class="date">2020-03-02</h4>
 
 </div>
 
@@ -549,7 +549,7 @@ res_pearson = (housing_df[,3:5] - pihat * m) / sqrt(pihat * m)
 g_stat = sum(res_pearson^2) 
 
 # P-value
-pval = 1 - pchisq(g_stat, df = (6 - 4) * (3 - 1)) # fit is good</code></pre>
+pval = 1 - pchisq(g_stat, df = (6 - 4) * (3 - 1))</code></pre>
 <p>Since 0.1395072 &gt; 0.05, we fail to reject our null hypothesis that the model does a good job fitting the data.</p>
 <p>Based on the signs of the coefficients in the above model, it appears there is a negative association between both low contact and renting a house with high satisfaction vs low satisfaction. There is a positive association between renting a tower block with high satisfaction vs low satisfaction. There is a negative association between low contact with medium satisfaction vs low satisfaction. There may be a slight positive association between renting a house and medium satisfaction vs low satisfaction. And there is a positive association between renting a tower block and medium satisfaction vs low satisfaction.</p>
 <p>Odds ratios with 95% CIs</p>

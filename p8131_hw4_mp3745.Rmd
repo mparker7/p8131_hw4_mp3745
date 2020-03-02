@@ -2,7 +2,7 @@
 title: "p8105_hw3_mp3745"
 author: "Matthew Parker"
 date: '`r format(Sys.time(), "%Y-%m-%d")`'
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -121,7 +121,7 @@ res_pearson = (housing_df[,3:5] - pihat * m) / sqrt(pihat * m)
 g_stat = sum(res_pearson^2) 
 
 # P-value
-pval = 1 - pchisq(g_stat, df = (6 - 4) * (3 - 1)) # fit is good
+pval = 1 - pchisq(g_stat, df = (6 - 4) * (3 - 1))
 ```
 
 Since `r pval` > 0.05, we fail to reject our null hypothesis that the model does a good job fitting the data. 
